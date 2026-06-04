@@ -1,0 +1,48 @@
+menu "ESP32-C6 Zigbee Base"
+
+    config ESP32_C6_ZIGBEE_BASE_MANUFACTURER_NAME
+        string "Default Basic cluster manufacturer name"
+        default "Wilhelm Advocaat-Marum"
+        help
+            Default Zigbee Basic cluster ManufacturerName value used when
+            product firmware does not override manufacturer_name in
+            esp32_c6_zigbee_base_config_t.
+
+    config ESP32_C6_ZIGBEE_BASE_MODEL_IDENTIFIER
+        string "Default Basic cluster model identifier"
+        default "ESP32-C6 Zigbee Base"
+        help
+            Default Zigbee Basic cluster ModelIdentifier value used when
+            product firmware does not override model_identifier.
+
+    config ESP32_C6_ZIGBEE_BASE_DATE_CODE
+        string "Default Basic cluster date code"
+        default "20260604"
+        help
+            Default Zigbee Basic cluster DateCode value. Use YYYYMMDD for
+            release builds.
+
+    config ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID
+        string "Default Basic cluster software build ID"
+        default "0.1.1"
+        help
+            Default Zigbee Basic cluster SWBuildID value. Use SemVer without
+            the leading v.
+
+    config ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION
+        int "Default Basic cluster application version"
+        range 0 255
+        default 2
+        help
+            Default Zigbee Basic cluster ApplicationVersion value. Increment
+            this numeric value for each released firmware version.
+
+    config ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION
+        int "Default Basic cluster hardware version"
+        range 0 255
+        default 1
+        help
+            Default Zigbee Basic cluster HWVersion value for the reference
+            hardware target.
+
+endmenu

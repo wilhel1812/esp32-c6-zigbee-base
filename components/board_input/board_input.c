@@ -19,6 +19,7 @@ static void poll_button(gpio_num_t gpio,
                         bool *was_pressed,
                         int64_t *pressed_since_ms,
                         bool *hold_start_reported,
+                        uint8_t *last_progress,
                         bool *reset_reported)
 {
     bool pressed = gpio_get_level(gpio) == 0;
@@ -27,23 +28,33 @@ static void poll_button(gpio_num_t gpio,
     if (pressed && !*was_pressed) {
         *pressed_since_ms = now_ms;
         *hold_start_reported = false;
+        *last_progress = 0;
         *reset_reported = false;
-    } else if (!pressed) {
+    } else if (!pressed && *was_pressed) {
+        if (*hold_start_reported && !*reset_reported && s_config.callback) {
+            s_config.callback(BOARD_INPUT_EVENT_RESET_HOLD_CANCELLED, 0, s_config.callback_ctx);
+        }
         *pressed_since_ms = 0;
         *hold_start_reported = false;
+        *last_progress = 0;
         *reset_reported = false;
     }
 
     if (pressed && *pressed_since_ms > 0) {
         int64_t held_ms = now_ms - *pressed_since_ms;
+        uint8_t progress = held_ms >= s_config.factory_reset_hold_ms ? 100 : (uint8_t)(held_ms * 100 / s_config.factory_reset_hold_ms);
         if (held_ms >= 1500 && !*hold_start_reported && s_config.callback) {
             *hold_start_reported = true;
-            s_config.callback(BOARD_INPUT_EVENT_RESET_HOLD_START, s_config.callback_ctx);
+            s_config.callback(BOARD_INPUT_EVENT_RESET_HOLD_START, progress, s_config.callback_ctx);
+        }
+        if (*hold_start_reported && progress != *last_progress && s_config.callback) {
+            *last_progress = progress;
+            s_config.callback(BOARD_INPUT_EVENT_RESET_HOLD_PROGRESS, progress, s_config.callback_ctx);
         }
         if (held_ms >= s_config.factory_reset_hold_ms && !*reset_reported) {
             *reset_reported = true;
             if (s_config.callback) {
-                s_config.callback(BOARD_INPUT_EVENT_FACTORY_RESET_REQUEST, s_config.callback_ctx);
+                s_config.callback(BOARD_INPUT_EVENT_FACTORY_RESET_REQUEST, 100, s_config.callback_ctx);
             }
         }
     }
@@ -55,10 +66,12 @@ static void input_task(void *arg)
 {
     bool boot_was_pressed = false;
     bool boot_hold_start_reported = false;
+    uint8_t boot_last_progress = 0;
     bool boot_reset_reported = false;
     int64_t boot_pressed_since_ms = 0;
     bool ext_was_pressed = false;
     bool ext_hold_start_reported = false;
+    uint8_t ext_last_progress = 0;
     bool ext_reset_reported = false;
     int64_t ext_pressed_since_ms = 0;
 
@@ -67,12 +80,14 @@ static void input_task(void *arg)
                     &boot_was_pressed,
                     &boot_pressed_since_ms,
                     &boot_hold_start_reported,
+                    &boot_last_progress,
                     &boot_reset_reported);
         if (s_config.external_reset_gpio >= 0) {
             poll_button((gpio_num_t)s_config.external_reset_gpio,
                         &ext_was_pressed,
                         &ext_pressed_since_ms,
                         &ext_hold_start_reported,
+                        &ext_last_progress,
                         &ext_reset_reported);
         }
         vTaskDelay(pdMS_TO_TICKS(50));

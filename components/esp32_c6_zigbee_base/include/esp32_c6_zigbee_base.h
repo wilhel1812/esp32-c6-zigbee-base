@@ -5,6 +5,7 @@
 
 #include "esp_err.h"
 #include "esp_zigbee.h"
+#include "sdkconfig.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,14 +19,38 @@ extern "C" {
 #define ESP32_C6_ZIGBEE_BASE_DEFAULT_EXTERNAL_RESET_GPIO    (-1)
 #define ESP32_C6_ZIGBEE_BASE_DEFAULT_FACTORY_RESET_HOLD_MS  (8000)
 
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_MANUFACTURER_NAME
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_MANUFACTURER_NAME "Wilhelm Advocaat-Marum"
+#endif
+
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_MODEL_IDENTIFIER
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_MODEL_IDENTIFIER "ESP32-C6 Zigbee Base"
+#endif
+
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_DATE_CODE
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_DATE_CODE "20260604"
+#endif
+
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID "0.1.1"
+#endif
+
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION 2
+#endif
+
+#ifndef CONFIG_ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION
+#define CONFIG_ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION 1
+#endif
+
 #define ESP32_C6_ZIGBEE_BASE_DEFAULT_CONFIG()                                      \
     {                                                                              \
-        .manufacturer_name = "esp32-c6-zigbee-base",                               \
-        .model_identifier = "Generic Zigbee Base",                                 \
-        .date_code = "20260604",                                                   \
-        .sw_build_id = "0.1.0",                                                    \
-        .application_version = 1,                                                   \
-        .hardware_version = 1,                                                      \
+        .manufacturer_name = CONFIG_ESP32_C6_ZIGBEE_BASE_MANUFACTURER_NAME,        \
+        .model_identifier = CONFIG_ESP32_C6_ZIGBEE_BASE_MODEL_IDENTIFIER,          \
+        .date_code = CONFIG_ESP32_C6_ZIGBEE_BASE_DATE_CODE,                        \
+        .sw_build_id = CONFIG_ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID,                    \
+        .application_version = CONFIG_ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION,     \
+        .hardware_version = CONFIG_ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION,          \
         .primary_channel_mask = ESP32_C6_ZIGBEE_BASE_DEFAULT_PRIMARY_CHANNEL_MASK,  \
         .secondary_channel_mask = ESP32_C6_ZIGBEE_BASE_DEFAULT_SECONDARY_CHANNEL_MASK, \
         .storage_partition_name = ESP32_C6_ZIGBEE_BASE_DEFAULT_STORAGE_PARTITION,   \

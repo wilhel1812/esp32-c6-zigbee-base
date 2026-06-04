@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "board_input.h"
@@ -26,6 +27,7 @@
 #include "status_led.h"
 
 #define ZCL_STRING_MAX_LEN 32
+#define LINK_QUALITY_REFRESH_MS 5000
 
 static const char *TAG = "ZB_BASE";
 
@@ -42,6 +44,14 @@ static uint8_t s_manufacturer_zcl[ZCL_STRING_MAX_LEN + 1];
 static uint8_t s_model_zcl[ZCL_STRING_MAX_LEN + 1];
 static uint8_t s_date_code_zcl[ZCL_STRING_MAX_LEN + 1];
 static uint8_t s_sw_build_zcl[ZCL_STRING_MAX_LEN + 1];
+static TaskHandle_t s_link_quality_task;
+
+static void request_link_quality_refresh(void)
+{
+    if (s_link_quality_task) {
+        xTaskNotifyGive(s_link_quality_task);
+    }
+}
 
 static void zcl_string_set(uint8_t *dest, const char *value)
 {
@@ -92,12 +102,41 @@ static void update_visual_state(status_led_mode_t led_mode, status_display_state
 {
     status_led_set_mode(led_mode);
     status_display_set_state(display_state);
+    switch (display_state) {
+    case STATUS_DISPLAY_PAIRING:
+        status_display_set_network_status(STATUS_DISPLAY_NETWORK_PAIRING, "PAIRING");
+        break;
+    case STATUS_DISPLAY_REJOINING:
+        status_display_set_network_status(STATUS_DISPLAY_NETWORK_REJOINING, "REJOINING");
+        break;
+    case STATUS_DISPLAY_ERROR:
+        status_display_set_network_status(STATUS_DISPLAY_NETWORK_OFFLINE, "ERROR");
+        break;
+    case STATUS_DISPLAY_IDENTIFYING:
+        status_display_set_network_status(s_joined ? STATUS_DISPLAY_NETWORK_JOINED : STATUS_DISPLAY_NETWORK_OFFLINE, "IDENTIFY");
+        break;
+    case STATUS_DISPLAY_RESET_HOLD:
+        status_display_set_network_status(s_joined ? STATUS_DISPLAY_NETWORK_JOINED : STATUS_DISPLAY_NETWORK_OFFLINE, "RESET");
+        break;
+    case STATUS_DISPLAY_FACTORY_RESETTING:
+        status_display_set_network_status(STATUS_DISPLAY_NETWORK_OFFLINE, "RESETTING");
+        break;
+    default:
+        status_display_set_network_status(s_joined ? STATUS_DISPLAY_NETWORK_JOINED : STATUS_DISPLAY_NETWORK_OFFLINE,
+                                          s_joined ? "JOINED" : "OFFLINE");
+        break;
+    }
+    if (!s_joined) {
+        status_display_set_link_quality(false, 0, 0);
+    }
 }
 
 static void set_joined_visual_state(void)
 {
     status_led_set_joined(s_output_on);
-    status_display_set_state(s_output_on ? STATUS_DISPLAY_JOINED_ON : STATUS_DISPLAY_JOINED_OFF);
+    status_display_set_network_status(STATUS_DISPLAY_NETWORK_JOINED, "JOINED");
+    status_display_set_output_state(s_output_on);
+    request_link_quality_refresh();
 }
 
 static esp_err_t load_u8_key(nvs_handle_t handle, const char *key, uint8_t *value)
@@ -207,7 +246,12 @@ static void set_output_state(bool on, bool flash_command)
     } else {
         status_led_set_joined(on);
     }
-    status_display_set_state(on ? STATUS_DISPLAY_JOINED_ON : STATUS_DISPLAY_JOINED_OFF);
+    status_display_set_network_status(STATUS_DISPLAY_NETWORK_JOINED, "JOINED");
+    status_display_set_output_state(on);
+    request_link_quality_refresh();
+    if (flash_command) {
+        status_display_show_event(STATUS_DISPLAY_ICON_POWER, on ? "OUTLET ON" : "OUTLET OFF", "ZIGBEE COMMAND", 3000);
+    }
     report_onoff_state();
 }
 
@@ -268,14 +312,42 @@ static void zigbee_factory_reset_cb(void *ctx)
     }
 }
 
-static void board_input_handler(board_input_event_t event, void *ctx)
+static uint8_t level_percent(uint8_t level)
+{
+    return (uint8_t)((uint32_t)level * 100 / 0xff);
+}
+
+static void show_level_event(status_display_icon_t icon, const char *name, bool on, uint8_t level)
+{
+    char title[32];
+    if (!on) {
+        snprintf(title, sizeof(title), "%s OFF", name);
+    } else {
+        snprintf(title, sizeof(title), "%s %u%%", name, level_percent(level));
+    }
+    status_display_show_event(icon, title, "ZIGBEE COMMAND", 3000);
+}
+
+static void board_input_handler(board_input_event_t event, uint8_t progress, void *ctx)
 {
     switch (event) {
     case BOARD_INPUT_EVENT_RESET_HOLD_START:
         update_visual_state(STATUS_LED_MODE_RESET_HOLD, STATUS_DISPLAY_RESET_HOLD);
+        status_display_set_reset_progress(progress);
+        break;
+    case BOARD_INPUT_EVENT_RESET_HOLD_PROGRESS:
+        status_display_set_reset_progress(progress);
+        break;
+    case BOARD_INPUT_EVENT_RESET_HOLD_CANCELLED:
+        if (s_joined) {
+            set_joined_visual_state();
+        } else {
+            update_visual_state(STATUS_LED_MODE_JOINING, STATUS_DISPLAY_PAIRING);
+        }
         break;
     case BOARD_INPUT_EVENT_FACTORY_RESET_REQUEST:
         ESP_LOGW(TAG, "Local factory reset requested");
+        status_display_set_reset_progress(100);
         update_visual_state(STATUS_LED_MODE_FACTORY_RESET, STATUS_DISPLAY_FACTORY_RESETTING);
         if (esp_zigbee_is_started()) {
             ESP_ERROR_CHECK_WITHOUT_ABORT(esp_zigbee_task_queue_post(zigbee_factory_reset_cb, NULL));
@@ -300,6 +372,55 @@ static void schedule_network_steering(void *arg)
 static void retry_network_steering(uint32_t delay_ms)
 {
     xTaskCreate(schedule_network_steering, "zb_steer_retry", 3072, (void *)delay_ms, 5, NULL);
+}
+
+static bool read_best_link_quality(uint8_t *lqi, int8_t *rssi)
+{
+    ezb_nwk_info_iterator_t iterator = EZB_NWK_INFO_ITERATOR_INIT;
+    ezb_nwk_neighbor_info_t info = {0};
+    bool found = false;
+    uint8_t best_lqi = 0;
+    int8_t best_rssi = 0;
+
+    esp_zigbee_lock_acquire(portMAX_DELAY);
+    while (ezb_nwk_get_next_neighbor(&iterator, &info) == EZB_ERR_NONE) {
+        bool is_router = info.device_type == EZB_NWK_DEVICE_TYPE_COORDINATOR ||
+                         info.device_type == EZB_NWK_DEVICE_TYPE_ROUTER;
+        if (is_router && info.lqi > best_lqi) {
+            found = true;
+            best_lqi = info.lqi;
+            best_rssi = info.rssi;
+        }
+    }
+    esp_zigbee_lock_release();
+
+    if (found) {
+        *lqi = best_lqi;
+        *rssi = best_rssi;
+    }
+    return found;
+}
+
+static void link_quality_task(void *arg)
+{
+    while (true) {
+        ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(LINK_QUALITY_REFRESH_MS));
+
+        if (!s_joined) {
+            status_display_set_link_quality(false, 0, 0);
+            continue;
+        }
+
+        uint8_t lqi = 0;
+        int8_t rssi = 0;
+        bool known = read_best_link_quality(&lqi, &rssi);
+        status_display_set_link_quality(known, lqi, rssi);
+        if (known) {
+            ESP_LOGD(TAG, "Zigbee link quality: LQI %u RSSI %d", lqi, rssi);
+        } else {
+            ESP_LOGD(TAG, "Zigbee link quality unknown");
+        }
+    }
 }
 
 static bool zigbee_signal_handler(const ezb_app_signal_t *app_signal)
@@ -419,6 +540,10 @@ static void handle_set_attr_value(ezb_zcl_set_attr_value_message_t *message)
             s_status_led_light_on = on;
         }
         apply_user_lights();
+        show_level_event(message->info.dst_ep == s_config.display_light_endpoint_id ? STATUS_DISPLAY_ICON_SUN : STATUS_DISPLAY_ICON_SPARKLES,
+                         message->info.dst_ep == s_config.display_light_endpoint_id ? "DISPLAY" : "LED",
+                         on,
+                         message->info.dst_ep == s_config.display_light_endpoint_id ? s_display_light_level : s_status_led_light_level);
         ESP_ERROR_CHECK_WITHOUT_ABORT(save_app_state());
         return;
     }
@@ -434,6 +559,10 @@ static void handle_set_attr_value(ezb_zcl_set_attr_value_message_t *message)
             s_status_led_light_level = level;
         }
         apply_user_lights();
+        show_level_event(message->info.dst_ep == s_config.display_light_endpoint_id ? STATUS_DISPLAY_ICON_SUN : STATUS_DISPLAY_ICON_SPARKLES,
+                         message->info.dst_ep == s_config.display_light_endpoint_id ? "DISPLAY" : "LED",
+                         message->info.dst_ep == s_config.display_light_endpoint_id ? s_display_light_on : s_status_led_light_on,
+                         level);
         ESP_ERROR_CHECK_WITHOUT_ABORT(save_app_state());
         return;
     }
@@ -699,6 +828,7 @@ esp_err_t esp32_c6_zigbee_base_start(const esp32_c6_zigbee_base_config_t *config
                         TAG, "failed to initialize board input");
 
     ESP_LOGI(TAG, "Start ESP32-C6 Zigbee base");
+    xTaskCreate(link_quality_task, "zb_link_quality", 3072, NULL, 4, &s_link_quality_task);
     xTaskCreate(zigbee_main_task, "Zigbee_main", 4096, NULL, 5, NULL);
     return ESP_OK;
 }
