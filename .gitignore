@@ -3,5 +3,11 @@ node_modules/
 managed_components/
 dependencies.lock
 sdkconfig
+sdkconfig.old
+_site/
+.jekyll-cache/
+.sass-cache/
+.bundle/
+vendor/bundle/
 *.pyc
 __pycache__/

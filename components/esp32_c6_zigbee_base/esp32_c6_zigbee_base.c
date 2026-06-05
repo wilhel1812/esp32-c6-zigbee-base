@@ -27,6 +27,7 @@
 #include "status_led.h"
 
 #define ZCL_STRING_MAX_LEN 32
+#define ZCL_PRODUCT_URL_MAX_LEN 64
 #define LINK_QUALITY_REFRESH_MS 5000
 
 static const char *TAG = "ZB_BASE";
@@ -42,6 +43,7 @@ static uint32_t s_identify_generation;
 static int64_t s_identify_end_us;
 static uint8_t s_manufacturer_zcl[ZCL_STRING_MAX_LEN + 1];
 static uint8_t s_model_zcl[ZCL_STRING_MAX_LEN + 1];
+static uint8_t s_product_url_zcl[ZCL_PRODUCT_URL_MAX_LEN + 1];
 static uint8_t s_date_code_zcl[ZCL_STRING_MAX_LEN + 1];
 static uint8_t s_sw_build_zcl[ZCL_STRING_MAX_LEN + 1];
 static TaskHandle_t s_link_quality_task;
@@ -53,9 +55,9 @@ static void request_link_quality_refresh(void)
     }
 }
 
-static void zcl_string_set(uint8_t *dest, const char *value)
+static void zcl_string_set(uint8_t *dest, size_t max_len, const char *value)
 {
-    size_t len = value ? strnlen(value, ZCL_STRING_MAX_LEN) : 0;
+    size_t len = value ? strnlen(value, max_len) : 0;
     dest[0] = len;
     if (len > 0) {
         memcpy(&dest[1], value, len);
@@ -92,10 +94,11 @@ static void copy_config(const esp32_c6_zigbee_base_config_t *config)
         s_config.factory_reset_hold_ms = defaults.factory_reset_hold_ms;
     }
 
-    zcl_string_set(s_manufacturer_zcl, s_config.manufacturer_name);
-    zcl_string_set(s_model_zcl, s_config.model_identifier);
-    zcl_string_set(s_date_code_zcl, s_config.date_code);
-    zcl_string_set(s_sw_build_zcl, s_config.sw_build_id);
+    zcl_string_set(s_manufacturer_zcl, ZCL_STRING_MAX_LEN, s_config.manufacturer_name);
+    zcl_string_set(s_model_zcl, ZCL_STRING_MAX_LEN, s_config.model_identifier);
+    zcl_string_set(s_product_url_zcl, ZCL_PRODUCT_URL_MAX_LEN, s_config.product_url);
+    zcl_string_set(s_date_code_zcl, ZCL_STRING_MAX_LEN, s_config.date_code);
+    zcl_string_set(s_sw_build_zcl, ZCL_STRING_MAX_LEN, s_config.sw_build_id);
 }
 
 static void update_visual_state(status_led_mode_t led_mode, status_display_state_t display_state)
@@ -615,13 +618,16 @@ static esp_err_t populate_basic_attrs(ezb_af_ep_desc_t ep_desc)
     ezb_zcl_cluster_desc_t basic_desc = ezb_af_endpoint_get_cluster_desc(ep_desc, EZB_ZCL_CLUSTER_ID_BASIC, EZB_ZCL_CLUSTER_SERVER);
     static uint8_t power_source = EZB_ZCL_BASIC_POWER_SOURCE_DC_SOURCE;
     static uint8_t device_enabled = 1;
-    static uint8_t generic_device_type = EZB_ZCL_BASIC_GENERIC_DEVICE_TYPE_GATEWAY_OR_BRIDGE;
 
     ESP_RETURN_ON_FALSE(basic_desc, ESP_ERR_NOT_FOUND, TAG, "basic cluster missing");
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID,
                                               s_manufacturer_zcl), TAG, "manufacturer attr failed");
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID,
                                               s_model_zcl), TAG, "model attr failed");
+    if (s_config.product_url && s_product_url_zcl[0] > 0) {
+        ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_PRODUCT_URL_ID,
+                                                  s_product_url_zcl), TAG, "product URL attr failed");
+    }
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID,
                                               &s_config.application_version), TAG, "application version attr failed");
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_HW_VERSION_ID,
@@ -630,7 +636,7 @@ static esp_err_t populate_basic_attrs(ezb_af_ep_desc_t ep_desc)
                                               s_date_code_zcl), TAG, "date code attr failed");
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, &power_source),
                         TAG, "power source attr failed");
-    ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_GENERIC_DEVICE_TYPE_ID, &generic_device_type),
+    ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_GENERIC_DEVICE_TYPE_ID, &s_config.generic_device_type),
                         TAG, "generic device type attr failed");
     ESP_RETURN_ON_ERROR(basic_attr_add_or_set(basic_desc, EZB_ZCL_ATTR_BASIC_DEVICE_ENABLED_ID, &device_enabled),
                         TAG, "device enabled attr failed");
@@ -831,6 +837,41 @@ esp_err_t esp32_c6_zigbee_base_start(const esp32_c6_zigbee_base_config_t *config
     xTaskCreate(link_quality_task, "zb_link_quality", 3072, NULL, 4, &s_link_quality_task);
     xTaskCreate(zigbee_main_task, "Zigbee_main", 4096, NULL, 5, NULL);
     return ESP_OK;
+}
+
+esp_err_t esp32_c6_zigbee_base_start_product(const esp32_c6_zigbee_base_product_config_t *product_config)
+{
+    ESP_RETURN_ON_FALSE(product_config, ESP_ERR_INVALID_ARG, TAG, "product config is required");
+    ESP_RETURN_ON_FALSE(product_config->identity.manufacturer_name, ESP_ERR_INVALID_ARG, TAG, "manufacturer name is required");
+    ESP_RETURN_ON_FALSE(product_config->identity.model_identifier, ESP_ERR_INVALID_ARG, TAG, "model identifier is required");
+    ESP_RETURN_ON_FALSE(product_config->identity.product_url, ESP_ERR_INVALID_ARG, TAG, "product URL is required");
+    ESP_RETURN_ON_FALSE(product_config->identity.generic_device_type != EZB_ZCL_BASIC_GENERIC_DEVICE_TYPE_UNSPECIFIED,
+                        ESP_ERR_INVALID_ARG, TAG, "generic device type is required");
+
+    esp32_c6_zigbee_base_config_t config = ESP32_C6_ZIGBEE_BASE_DEFAULT_CONFIG();
+    config.manufacturer_name = product_config->identity.manufacturer_name;
+    config.model_identifier = product_config->identity.model_identifier;
+    config.product_url = product_config->identity.product_url;
+    config.generic_device_type = product_config->identity.generic_device_type;
+    config.date_code = product_config->identity.date_code;
+    config.sw_build_id = product_config->identity.sw_build_id;
+    config.application_version = product_config->identity.application_version;
+    config.hardware_version = product_config->identity.hardware_version;
+    config.primary_channel_mask = product_config->zigbee.primary_channel_mask;
+    config.secondary_channel_mask = product_config->zigbee.secondary_channel_mask;
+    config.storage_partition_name = product_config->zigbee.storage_partition_name;
+    config.app_nvs_namespace = product_config->zigbee.app_nvs_namespace;
+    config.boot_gpio = product_config->board.boot_gpio;
+    config.external_reset_gpio = product_config->board.external_reset_gpio;
+    config.factory_reset_hold_ms = product_config->board.factory_reset_hold_ms;
+    config.onoff_endpoint_id = product_config->outlet.enabled ? product_config->outlet.endpoint_id : 0;
+    config.display_light_endpoint_id = product_config->display.enabled ? product_config->display.endpoint_id : 0;
+    config.status_led_endpoint_id = product_config->status_led.enabled ? product_config->status_led.endpoint_id : 0;
+    config.extra_endpoints_cb = product_config->extra_endpoints_cb;
+    config.zcl_action_cb = product_config->zcl_action_cb;
+    config.callback_ctx = product_config->callback_ctx;
+
+    return esp32_c6_zigbee_base_start(&config);
 }
 
 bool esp32_c6_zigbee_base_is_joined(void)

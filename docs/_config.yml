@@ -1,0 +1,15 @@
+title: ESP32-C6 Zigbee Base
+description: Product configuration and development docs for the ESP32-C6 Zigbee base firmware.
+remote_theme: just-the-docs/just-the-docs
+
+url: https://wilhel1812.github.io
+baseurl: /esp32-c6-zigbee-base
+
+plugins:
+  - jekyll-remote-theme
+
+search_enabled: true
+color_scheme: light
+heading_anchors: true
+aux_links:
+  GitHub Repository: https://github.com/wilhel1812/esp32-c6-zigbee-base

@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "generate:icons": "node scripts/generate_lucide_assets.js"
+    "generate:icons": "node scripts/generate_lucide_assets.js",
+    "docs:check": "node scripts/check_config_docs.js check",
+    "docs:generate": "node scripts/check_config_docs.js generate"
   },
   "devDependencies": {
     "lucide-static": "0.541.0"

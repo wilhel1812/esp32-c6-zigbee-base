@@ -8,11 +8,9 @@
 ## Versioning And Git
 
 - By default, every meaningful code or documentation change must bump the patch version.
-- Keep version metadata consistent across:
-  - `components/esp32_c6_zigbee_base/idf_component.yml`
-  - `components/esp32_c6_zigbee_base/Kconfig`
-  - `components/esp32_c6_zigbee_base/include/esp32_c6_zigbee_base.h`
-  - `README.md`
+- Bump release identity through component Kconfig defaults.
+- Bump component package version through `components/esp32_c6_zigbee_base/idf_component.yml`.
+- Keep dependency examples pinned to exact tags.
 - For each version bump:
   - Increment `SWBuildID` using SemVer without the leading `v`.
   - Increment `ApplicationVersion`.

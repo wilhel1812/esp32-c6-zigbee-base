@@ -1,0 +1,472 @@
+[
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "manufacturer_name",
+    "path": "legacy.manufacturer_name",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_MANUFACTURER_NAME",
+    "allowed": "Any non-empty Zigbee character string.",
+    "description": "ManufacturerName value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "model_identifier",
+    "path": "legacy.model_identifier",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_MODEL_IDENTIFIER",
+    "allowed": "Any non-empty Zigbee character string.",
+    "description": "ModelIdentifier value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "product_url",
+    "path": "legacy.product_url",
+    "type": "string",
+    "required": false,
+    "default": "Omitted.",
+    "allowed": "A product, support, or source URL.",
+    "description": "ProductURL value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "generic_device_type",
+    "path": "legacy.generic_device_type",
+    "type": "uint8_t",
+    "required": false,
+    "default": "EZB_ZCL_BASIC_GENERIC_DEVICE_TYPE_UNSPECIFIED",
+    "allowed": "Any SDK GenericDeviceType value.",
+    "description": "Generic device type used by controllers for UI/icon selection."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "date_code",
+    "path": "legacy.date_code",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_DATE_CODE",
+    "allowed": "YYYYMMDD for release builds.",
+    "description": "DateCode value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "sw_build_id",
+    "path": "legacy.sw_build_id",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID",
+    "allowed": "SemVer without a leading v.",
+    "description": "SWBuildID value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "application_version",
+    "path": "legacy.application_version",
+    "type": "uint8_t",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION",
+    "allowed": "0-255.",
+    "description": "Numeric Basic cluster ApplicationVersion."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "hardware_version",
+    "path": "legacy.hardware_version",
+    "type": "uint8_t",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION",
+    "allowed": "0-255.",
+    "description": "Numeric Basic cluster HWVersion."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "primary_channel_mask",
+    "path": "legacy.primary_channel_mask",
+    "type": "uint32_t",
+    "required": false,
+    "default": "ESP32_C6_ZIGBEE_BASE_DEFAULT_PRIMARY_CHANNEL_MASK",
+    "allowed": "Zigbee channel bitmask.",
+    "description": "Primary channel set used while commissioning."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "secondary_channel_mask",
+    "path": "legacy.secondary_channel_mask",
+    "type": "uint32_t",
+    "required": false,
+    "default": "ESP32_C6_ZIGBEE_BASE_DEFAULT_SECONDARY_CHANNEL_MASK",
+    "allowed": "Zigbee channel bitmask.",
+    "description": "Secondary channel set used while commissioning."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "storage_partition_name",
+    "path": "legacy.storage_partition_name",
+    "type": "string",
+    "required": false,
+    "default": "zb_storage",
+    "allowed": "An ESP-IDF partition name.",
+    "description": "NVS partition used by the Zigbee stack."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "app_nvs_namespace",
+    "path": "legacy.app_nvs_namespace",
+    "type": "string",
+    "required": false,
+    "default": "zigbee_base",
+    "allowed": "An NVS namespace.",
+    "description": "NVS namespace used for app-level persisted state."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "boot_gpio",
+    "path": "legacy.boot_gpio",
+    "type": "int",
+    "required": false,
+    "default": "9",
+    "allowed": "GPIO number.",
+    "description": "Primary local reset/input button GPIO."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "external_reset_gpio",
+    "path": "legacy.external_reset_gpio",
+    "type": "int",
+    "required": false,
+    "default": "-1",
+    "allowed": "GPIO number or -1.",
+    "description": "Optional second local reset/input GPIO."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "factory_reset_hold_ms",
+    "path": "legacy.factory_reset_hold_ms",
+    "type": "uint32_t",
+    "required": false,
+    "default": "8000",
+    "allowed": "Positive duration in milliseconds.",
+    "description": "Hold duration before local factory reset is requested."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "onoff_endpoint_id",
+    "path": "legacy.onoff_endpoint_id",
+    "type": "uint8_t",
+    "required": false,
+    "default": "10",
+    "allowed": "1-240, or 0 to disable.",
+    "description": "Endpoint ID for the outlet OnOff endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "display_light_endpoint_id",
+    "path": "legacy.display_light_endpoint_id",
+    "type": "uint8_t",
+    "required": false,
+    "default": "11",
+    "allowed": "1-240, or 0 to disable.",
+    "description": "Endpoint ID for the display backlight endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "status_led_endpoint_id",
+    "path": "legacy.status_led_endpoint_id",
+    "type": "uint8_t",
+    "required": false,
+    "default": "12",
+    "allowed": "1-240, or 0 to disable.",
+    "description": "Endpoint ID for the status LED endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "extra_endpoints_cb",
+    "path": "legacy.extra_endpoints_cb",
+    "type": "callback",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Function pointer or NULL.",
+    "description": "Optional callback for registering additional endpoints."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "zcl_action_cb",
+    "path": "legacy.zcl_action_cb",
+    "type": "callback",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Function pointer or NULL.",
+    "description": "Optional callback for product-specific ZCL action handling."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_config_t",
+    "field": "callback_ctx",
+    "path": "legacy.callback_ctx",
+    "type": "void *",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Any pointer.",
+    "description": "User context passed to product callbacks."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "manufacturer_name",
+    "path": "identity.manufacturer_name",
+    "type": "string",
+    "required": true,
+    "default": "None in product config.",
+    "allowed": "Any non-empty Zigbee character string.",
+    "description": "ManufacturerName value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "model_identifier",
+    "path": "identity.model_identifier",
+    "type": "string",
+    "required": true,
+    "default": "None in product config.",
+    "allowed": "Any non-empty Zigbee character string.",
+    "description": "ModelIdentifier value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "product_url",
+    "path": "identity.product_url",
+    "type": "string",
+    "required": true,
+    "default": "None in product config.",
+    "allowed": "A product, support, or source URL.",
+    "description": "ProductURL value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "generic_device_type",
+    "path": "identity.generic_device_type",
+    "type": "uint8_t",
+    "required": true,
+    "default": "None in product config.",
+    "allowed": "Any SDK GenericDeviceType except Unspecified.",
+    "description": "Generic device type used by controllers for UI/icon selection."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "date_code",
+    "path": "identity.date_code",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_DATE_CODE",
+    "allowed": "YYYYMMDD for release builds.",
+    "description": "DateCode value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "sw_build_id",
+    "path": "identity.sw_build_id",
+    "type": "string",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID",
+    "allowed": "SemVer without a leading v.",
+    "description": "SWBuildID value for the Basic cluster."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "application_version",
+    "path": "identity.application_version",
+    "type": "uint8_t",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION",
+    "allowed": "0-255.",
+    "description": "Numeric Basic cluster ApplicationVersion."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_identity_config_t",
+    "field": "hardware_version",
+    "path": "identity.hardware_version",
+    "type": "uint8_t",
+    "required": false,
+    "default": "CONFIG_ESP32_C6_ZIGBEE_BASE_HARDWARE_VERSION",
+    "allowed": "0-255.",
+    "description": "Numeric Basic cluster HWVersion."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_board_config_t",
+    "field": "boot_gpio",
+    "path": "board.boot_gpio",
+    "type": "int",
+    "required": true,
+    "default": "9 in the reference template.",
+    "allowed": "GPIO number.",
+    "description": "Primary local reset/input button GPIO."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_board_config_t",
+    "field": "external_reset_gpio",
+    "path": "board.external_reset_gpio",
+    "type": "int",
+    "required": false,
+    "default": "-1 in the reference template.",
+    "allowed": "GPIO number or -1.",
+    "description": "Optional second local reset/input GPIO."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_board_config_t",
+    "field": "factory_reset_hold_ms",
+    "path": "board.factory_reset_hold_ms",
+    "type": "uint32_t",
+    "required": true,
+    "default": "8000 in the reference template.",
+    "allowed": "Positive duration in milliseconds.",
+    "description": "Hold duration before local factory reset is requested."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_zigbee_config_t",
+    "field": "primary_channel_mask",
+    "path": "zigbee.primary_channel_mask",
+    "type": "uint32_t",
+    "required": false,
+    "default": "ESP32_C6_ZIGBEE_BASE_DEFAULT_PRIMARY_CHANNEL_MASK",
+    "allowed": "Zigbee channel bitmask.",
+    "description": "Primary channel set used while commissioning."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_zigbee_config_t",
+    "field": "secondary_channel_mask",
+    "path": "zigbee.secondary_channel_mask",
+    "type": "uint32_t",
+    "required": false,
+    "default": "ESP32_C6_ZIGBEE_BASE_DEFAULT_SECONDARY_CHANNEL_MASK",
+    "allowed": "Zigbee channel bitmask.",
+    "description": "Secondary channel set used while commissioning."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_zigbee_config_t",
+    "field": "storage_partition_name",
+    "path": "zigbee.storage_partition_name",
+    "type": "string",
+    "required": false,
+    "default": "zb_storage",
+    "allowed": "An ESP-IDF partition name.",
+    "description": "NVS partition used by the Zigbee stack."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_zigbee_config_t",
+    "field": "app_nvs_namespace",
+    "path": "zigbee.app_nvs_namespace",
+    "type": "string",
+    "required": false,
+    "default": "zigbee_base",
+    "allowed": "An NVS namespace.",
+    "description": "NVS namespace used for app-level persisted state."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_endpoint_feature_config_t",
+    "field": "enabled",
+    "path": "outlet.enabled / display.enabled / status_led.enabled",
+    "type": "bool",
+    "required": true,
+    "default": "true in the reference template.",
+    "allowed": "true or false.",
+    "description": "Controls whether the feature endpoint is registered."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_endpoint_feature_config_t",
+    "field": "endpoint_id",
+    "path": "outlet.endpoint_id / display.endpoint_id / status_led.endpoint_id",
+    "type": "uint8_t",
+    "required": true,
+    "default": "10, 11, and 12 in the reference template.",
+    "allowed": "1-240 when enabled.",
+    "description": "Zigbee endpoint ID for the feature."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "identity",
+    "path": "identity",
+    "type": "section",
+    "required": true,
+    "default": "None.",
+    "allowed": "esp32_c6_zigbee_base_identity_config_t.",
+    "description": "Product identity and release metadata."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "board",
+    "path": "board",
+    "type": "section",
+    "required": true,
+    "default": "None.",
+    "allowed": "esp32_c6_zigbee_base_board_config_t.",
+    "description": "Board-local pins and reset behavior."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "zigbee",
+    "path": "zigbee",
+    "type": "section",
+    "required": false,
+    "default": "Base Zigbee defaults.",
+    "allowed": "esp32_c6_zigbee_base_zigbee_config_t.",
+    "description": "Zigbee runtime and storage settings."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "outlet",
+    "path": "outlet",
+    "type": "section",
+    "required": false,
+    "default": "Enabled endpoint 10 in the reference template.",
+    "allowed": "esp32_c6_zigbee_base_endpoint_feature_config_t.",
+    "description": "Outlet OnOff feature endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "display",
+    "path": "display",
+    "type": "section",
+    "required": false,
+    "default": "Enabled endpoint 11 in the reference template.",
+    "allowed": "esp32_c6_zigbee_base_endpoint_feature_config_t.",
+    "description": "Display backlight feature endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "status_led",
+    "path": "status_led",
+    "type": "section",
+    "required": false,
+    "default": "Enabled endpoint 12 in the reference template.",
+    "allowed": "esp32_c6_zigbee_base_endpoint_feature_config_t.",
+    "description": "Status LED feature endpoint."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "extra_endpoints_cb",
+    "path": "extra_endpoints_cb",
+    "type": "callback",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Function pointer or NULL.",
+    "description": "Optional callback for registering additional endpoints."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "zcl_action_cb",
+    "path": "zcl_action_cb",
+    "type": "callback",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Function pointer or NULL.",
+    "description": "Optional callback for product-specific ZCL action handling."
+  },
+  {
+    "struct": "esp32_c6_zigbee_base_product_config_t",
+    "field": "callback_ctx",
+    "path": "callback_ctx",
+    "type": "void *",
+    "required": false,
+    "default": "NULL",
+    "allowed": "Any pointer.",
+    "description": "User context passed to product callbacks."
+  }
+]

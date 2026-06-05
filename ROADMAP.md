@@ -68,8 +68,11 @@ Goal: Keep product firmware small by exposing stable base APIs for identity, vis
 
 - [x] Review and define all Basic cluster identity attributes
 - [x] Product identity configuration
-- [ ] Product endpoint registration hook
+- [~] Product endpoint registration hook
 - [ ] Product event display API
 - [ ] Visual state callback/hook policy
 - [x] Versioning scheme and git release/tag policy
 - [x] Consumer documentation for ESP-IDF dependency pinning
+- [x] Sectioned product config template
+- [x] Config reference documentation enforcement
+- [x] Just the Docs source and Pages workflow
