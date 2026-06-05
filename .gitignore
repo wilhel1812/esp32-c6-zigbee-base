@@ -9,5 +9,6 @@ _site/
 .sass-cache/
 .bundle/
 vendor/bundle/
+docs/vendor/bundle/
 *.pyc
 __pycache__/
