@@ -24,7 +24,7 @@ menu "ESP32-C6 Zigbee Base"
 
     config ESP32_C6_ZIGBEE_BASE_SW_BUILD_ID
         string "Default Basic cluster software build ID"
-        default "0.1.5"
+        default "0.1.6"
         help
             Default Zigbee Basic cluster SWBuildID value. Use SemVer without
             the leading v.
@@ -32,7 +32,7 @@ menu "ESP32-C6 Zigbee Base"
     config ESP32_C6_ZIGBEE_BASE_APPLICATION_VERSION
         int "Default Basic cluster application version"
         range 0 255
-        default 6
+        default 7
         help
             Default Zigbee Basic cluster ApplicationVersion value. Increment
             this numeric value for each released firmware version.
