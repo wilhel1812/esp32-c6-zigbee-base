@@ -20,7 +20,7 @@ dependencies:
   esp32_c6_zigbee_base:
     git: https://github.com/wilhel1812/esp32-c6-zigbee-base.git
     path: components/esp32_c6_zigbee_base
-    version: v0.1.6
+    version: v0.1.7
 ```
 
 Product firmware should pin this component to exact tags, not branches.

@@ -1,4 +1,4 @@
-version: "0.1.6"
+version: "0.1.7"
 description: Reusable ESP32-C6 Zigbee device base for the Waveshare ESP32-C6-LCD-1.3 board
 dependencies:
   idf:
@@ -8,12 +8,12 @@ dependencies:
   board_input:
     git: https://github.com/wilhel1812/esp32-c6-zigbee-base.git
     path: components/board_input
-    version: v0.1.6
+    version: v0.1.7
   status_display:
     git: https://github.com/wilhel1812/esp32-c6-zigbee-base.git
     path: components/status_display
-    version: v0.1.6
+    version: v0.1.7
   status_led:
     git: https://github.com/wilhel1812/esp32-c6-zigbee-base.git
     path: components/status_led
-    version: v0.1.6
+    version: v0.1.7
