@@ -20,10 +20,16 @@ dependencies:
   esp32_c6_zigbee_base:
     git: https://github.com/wilhel1812/esp32-c6-zigbee-base.git
     path: components/esp32_c6_zigbee_base
-    version: v0.1.7
+    version: v0.1.8
 ```
 
 Product firmware should pin this component to exact tags, not branches.
+
+## ESPHome Spike
+
+An ESPHome supported-features experiment lives in `esphome/`. It is separate
+from the ESP-IDF firmware and only uses Zigbee/display features currently
+available on ESP32-C6.
 
 ## Documentation
 
